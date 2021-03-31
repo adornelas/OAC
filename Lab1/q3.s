@@ -1,13 +1,15 @@
 .data
 .include "maze.s"
 CAMINHO: .space 153600 # Estimativa de pior caso: 4x 320x240/2 tamanho do maior labirinto
-#CAMINHO: .word 11,159,116,159,117,158,117,157,117,157,118,157,119,158,119,159,119,159,120,159,121,159,122  # onde 100 inicial Ã© o nÃºmero de passos e as duplas (160,120) (160,121)
+
+BIFURC:	.space 1000
+
 .text
 MAIN: 	la a0,MAZE
 	jal draw_maze
 	la a0,MAZE
 	la a1,CAMINHO
-#	jal solve_maze
+	jal solve_maze
 #	la a0,CAMINHO
 #	jal animate
 	li a7,10
@@ -19,63 +21,61 @@ draw_maze:
 	li t1,0xFF000000	# endereco inicial da Memoria VGA - Frame 0
 	li t2,0xFF012C00	# endereco final 
 	li t3,0xFFFFFFFF	# cor branco|branco|branco|branco
-LOOP: 	beq t1,t2,LAB		# Se for o Ãºltimo endereÃ§o entÃ£o sai do loop
-	sw t3,0(t1)		# escreve a word na memÃ³ria VGA
-	addi t1,t1,4		# soma 4 ao endereÃ§o
-	j LOOP			# volta a verificar
+LOOPbs:
+ 	beq t1,t2,LAB		# Se for o último endereço então sai do loop
+	sw t3,0(t1)		# escreve a word na memória VGA
+	addi t1,t1,4		# soma 4 ao endereço
+	j LOOPbs		# volta a verificar
 	
 # Carrega a imagem
 
-LAB:	li 	t0,0xFF000000		# endereco inicial da Memoria VGA - Frame 0
-	la 	s0,MAZE			# endereÃ§o dos dados da tela na memoria
-	lw 	s1,0(s0)		# numero de colunas
-	addi	s1,s1,1			# soma um pra ficar par
-	li	s3,320			# ncol do display
-	sub 	s3,s3,s1		# ncol total - ncol labirinto
-	li	t4,2
-	div	s3,s3,t4		# numero do espaÃ§amento horizontal do display e labirinto
-	li	t4,240			# nlin do display
-	sub	t4,t4,s1		# nlin total - nlin labirinto
-	li 	t5,2
-	div	t4,t4,t5
-	li 	t5,320
-	mul	t4,t4,t5		#espaÃ§amento vertial
-	add	t4,t4,s3		#soma espaÃ§amento em cima com espaÃ§amento lateral
-	add	t0,t0,t4		
-	addi	s1,s1,1
-	lw 	s2,4(s0)		# numero de linhas
-	addi	s2,s2,1			# soma 1 pra ficar par
-	li	t4,4
-	mv	s4,s2
-	addi 	s0,s0,8			# primeiro pixels depois das informaÃ§Ãµes de nlin ncol
-	addi	s1,s1,-1		# coloca numero real em nlin e ncol pra calcular o numero total de pixels
-	addi	s2,s2,-1
-	mul 	t1,s1,s2            	# numero total de pixels da imagem
-	addi	s1,s1,1			# tira o numero real em nlin e ncol
-	addi	s2,s2,1
-	li 	t2,0
-LOOP1: 	bge 	t2,t1,VOLTA		# Se for o Ãºltimo endereÃ§o entÃ£o sai do loop
-	bge	t2,s4,PULA		# Se acabar a linha, vai pro PULA
-	lw 	t3,0(s0)		# le um conjunto de *4 pixels* : word
-	sw 	t3,0(t0)		# escreve a word na memÃ³ria VGA
-	addi 	t0,t0,4			# soma 4 ao endereÃ§o
-	addi 	s0,s0,4
-	addi 	t2,t2,4			# incrementa contador de bits
-	j 	LOOP1			# volta a verificar	
-PULA:	add	t0,t0,s3		# pula a linha
-	add	t0,t0,s3
-	add	s4,s4,s2
-	j	LOOP1
-	
-VOLTA:	ret
+LAB:
+	la	s0, MAZE		# S0 ( Endereço Atual Labirinto )
+	li	t0,0xFF009600		# Endereço do meio
+	lw 	s1,0(s0)		# Número de Colunas
+	addi	s1,s1,1			# Acrescenta 1 nas Colunas
+	lw 	s2,4(s0)		# Número de linhas
+	addi	s2,s2,1			# Acrescenta 1 nas linhas
+	addi 	s0,s0,8			# Primeiro pixel depois das informações de linhas e colunas
+ 	li	t2, 320			# Resolução Largura
+ 	li 	t3, 2			# Divisor 2
+ 	div	t1, s2, t3		# Número de Linhas / 2
+ 	mul	t1, t1, t2		# Multiplico (Linhas / 2 * 320)
+ 	neg	t1, t1			# (Número de Linhas / 2)*(320) (Negativo)
+ 	li	t2, 160
+ 	add	t0, t0, t1		# Subtraio do Endereço Inicial
+ 	div	t3, s1,t3		# Número de Colunas / 2
+ 	sub	t4, t2,t3
+ 	add	t0, t0, t4		# Endereço Inicial = Meio Deslocamento Direita -> Coluna
+ 	add	t4, t4, t4		
+ 	mv	s3, t0			# Endereço Inicial
+ 	mul	t1, s1, s2		# Quantidade de Pixels no Labirinto
+ 	li	t2,0			# Zera contador de Linha
+ 	j	LOOP
+ 	
+new_line:
+	li	t2,0
+	add	t0, t0, t4
+	 	
+LOOP:	beqz 	t1, FLOOP		# Se for o último endereço então sai do loop
+	lw	t3,0(s0)
+	sw 	t3,0(t0)		# escreve a word na memória VGA
+	addi 	t1,t1,-4		# soma 4 ao endereço
+	addi	s0,s0,4
+	addi	t0,t0,4
+	addi	t2,t2,4
+	bge	t2, s1, new_line
+	j 	LOOP			# volta a verificar
+FLOOP:	ret
 
 animate:			#a0 tem maze e a1 tem CAMINHO
 	li	t2,0x07070707	# cor vermelho
 	li	t3,0		
-	la	s0,CAMINHO	# endereÃ§o dos passos
+	la	s0,CAMINHO	# endereço dos passos
 	lw	s1,0(s0)	# numero de passos
 	addi	s0,s0,4
-LOOP2:	beq	t3,s1,FIMANIMATE#se for Ãºltimo passo, sai do loop
+LOOPANIMATE:
+	beq	t3,s1,FIMANIMATE#se for último passo, sai do loop
 	lw	s2,0(s0)	# primeiro dado (coluna)
 	addi	s0,s0,4
 	lw	s3,0(s0)	# segundo dado (linha)
@@ -83,45 +83,185 @@ LOOP2:	beq	t3,s1,FIMANIMATE#se for Ãºltimo passo, sai do loop
 	mul 	t4,t4,s3	#ncoltotal * Numero de linhas
 	add	t4,t4,s2	#t4= 320*nlin + ncol
 	li	t0,0xFF000000	# endereco inicial da Memoria VGA - Frame 0
-	add	t0,t0,t4	#soma o valor ao endereÃ§o da VGA
-	sb 	t2,0(t0)	# escreve vermelho na memÃ³ria VGA
+	add	t0,t0,t4	#soma o valor ao endereço da VGA
+	sb 	t2,0(t0)	# escreve vermelho na memória VGA
 	addi	t3,t3,1
 	addi	s0,s0,4
-	j	LOOP2
+	j	LOOPANIMATE
 	
 
 FIMANIMATE:
 	ret
 	
+solve_maze:
+	#ebreak
+	li	t6, 0x07070707		# Cor Vermelha
+	li	t2, 320			# Resolução Largura
+	li	t1, 2
+	la	a2, BIFURC
+	div	t1, s1, t1
+	add	s3, s3, t1		# Começando pelo Primeiro Pixel
+	addi	s3, s3, -1		# Ajusta primeiro pixel
+	sb	t6, 0(s3)		# Carrega no s3 o primeiro PIXEL
+	mv	t1, s3			# Endereço do s3
+	
+	ebreak
+	addi	s2, s2, -1
+	mul	t4, t2, s2
+	add	a4, s3,t4		# Endereço do PIXEL ALVO 
+	#sb	t6, 0(a4)		# Carrega no s3 o primeiro PIXEL
+	
+	sw	t1, 0(a1)		# Armazena primeiro endereço no "CAMINHO"
+	addi	a1, a1, 4
+	addi	s11, s11, 4
+	add	t1, t1, t2		# Descendo o Pixel
+	jal 	ANDA
+	
+	
+AGAIN:	ebreak
+	jal	VIZINHOS
+	beq	t4, zero, SEM_SAIDA
+	li	t3, 1
+	bgt	t4, t3, NO_RECURSIVO
+	jal	ANDA_LADO
+	j	AGAIN
 	
 
+############################### Confere Pixels Vizinhos ###############################
+VIZINHOS:
+# Confere Pixel da Esquerda
+	li	t4, 0
+	li	s2, 0
+	li	s3, 0
+	li	s4, 0
+	li	s5, 0
+	addi	t1, t1, -1
+	lb	t3, 0(t1)
+	lw	t5, -8(a1)
+	mv	t6, t1
+	addi	t1, t1, 1
+	beq	t5, t6, EMBAIXO
+	beqz	t3, EMBAIXO
+	addi	t4, t4, 1
+	li	s2, 1			# s2 indica vizinho esquerdo
+EMBAIXO:
+	add	t1, t1, t2		# Confere Pixel de Baixo
+	lb	t3, 0(t1)
+	mv	t6, t1
+	sub	t1, t1, t2
+	beq	t5, t6, LADODIR
+	beqz	t3, LADODIR	
+	addi	t4, t4, 1
+	li	s3, 1			# s3 indica vizinho em baixo
+LADODIR:				# Confere Pixel da Direita
+	addi	t1, t1, 1
+	lb	t3, 0(t1)
+	mv	t6, t1
+	addi	t1, t1, -1
+	beq	t5, t6, EMCIMA
+	beqz	t3, EMCIMA
+	addi 	t4, t4, 1
+	li	s4, 1			# s2 indica vizinho direito
+EMCIMA:
+	sub	t1, t1, t2		# Confere Pixel de Cima
+	lb	t3, 0(t1)
+	mv	t6, t1
+	add	t1, t1, t2
+	beq	t5, t6, RETORNA
+	beqz	t3, RETORNA
+	addi	t4, t4, 1
+	li	s5, 1
+	ret
+############################### Conferido Pixels Vizinhos ###############################
+############################### s2, s3, s4, s5 (Vizinhos) ###############################
+############################### Sem Saída / Com Vizinnhos ############################### 
 
-
-#solve_maze:				#a0 tem MAZE e a1 tem CAMINHO
-#	lw 	s1,0(s0)		# numero de colunas				
-#	srli	t0,s1,1			#t0 = (N/2)
-#	addi	t0,t0,-1		#t0-- (primeiro lugar do labirinto)
-#	addi	a1,a1,1			#pula a primeira posicao do CAMINHO
-#	addi	s2,s2,1			#salva o indice de CAMINHO
-#	sw	t0,0(a1)		#salva o primeiro numero da coluna
-#	mv	s3,t0				#salva em s3 a coluna anterior
-#	addi	a1,a1,4			#pula a posicao do CAMINHO
-#	addi	s2,s2,1			#salva o indice de CAMINHO	
-#	sw	zero,0(a1)		#salva a primeira linha em CAMINHO
-#	mv	s4,zero				#salva em s4 a linha anterior
-#	addi	a1,a1,4			#pula a posicao do CAMINHO
-#	addi	s2,s2,1			#salva o indice de CAMINHO
-#	sw	t0,0(a1)		#salva coluna da segunda posiÃ§Ã£o
-#	mv	s5,t0				#salva em s5 a coluna atual
-#	addi	a1,a1,4			#pula a posicao do CAMINHO
-#	addi	s2,s2,1			#salva o indice de CAMINHO
-#	li	t0,1
-#	sw	t0,0(a1)		#salva linha da segunda posiÃ§Ã£o
-#	mv	s6,t0				#salva em s6 a linha atual
-#	addi	a1,a1,4			#pula a posicao do CAMINHO
-#	addi	s2,s2,1			#salva o indice de CAMINHO
-#LOOP2:	beq	s6,s6,VOLTA		#se chegou na ultima linha volta
-#	blt	s6,s4,CIMA		#se andou pra cima
-#	
-#CIMA:					#se tem parede a direita, segue reto
-					#se nao, vire a direita
+ANDA_LADO:
+	beqz 	s2, AAA			# S2 = 0 -> nada no lado ESQUERDO
+	addi	t1, t1, -1
+	## ANDA ##
+	sb	t6, 0(t1)		# Carrega no s3 o primeiro PIXEL
+	sw	t1, 0(a1)
+	addi	a1, a1, 4
+	addi	s11, s11, 4
+	## ##
+	ret
+AAA:	beqz	s3, BBB			# S3 = 0 -> nada EM BAIXO
+	add	t1, t1, t2
+	## ANDA ##
+	sb	t6, 0(t1)		# Carrega no s3 o primeiro PIXEL
+	sw	t1, 0(a1)
+	addi	a1, a1, 4
+	addi	s11, s11, 4
+	## ##	
+	ret
+BBB:	beqz	s4, CCC			# S4 = 0 -> nada no lado DIREITO
+	addi	t1, t1, 1
+	## ANDA ##
+	sb	t6, 0(t1)		# Carrega no s3 o primeiro PIXEL
+	sw	t1, 0(a1)
+	addi	a1, a1, 4
+	addi	s11, s11, 4
+	## ##
+	ret
+CCC:	beqz	s5, RETORNA		# S5 = 0 -> nada EM CIMA
+	sub	t1, t1, t2
+	## ANDA ##
+	sb	t6, 0(t1)		# Carrega no s3 o primeiro PIXEL
+	sw	t1, 0(a1)
+	addi	a1, a1, 4
+	addi	s11, s11, 4
+	## ##
+	ret
+ANDA:
+	li	t6, 0x07070707
+	sb	t6, 0(t1)		# Carrega no s3 o primeiro PIXEL
+	sw	t1, 0(a1)
+	addi	a1, a1, 4
+	addi	s11, s11, 4
+	ret
+	
+NO_RECURSIVO:
+	sw 	t1, 0(a2) 		# empilha t1
+	addi	a2, a2, 4
+	addi	s10, s10, 1
+	jal	ANDA_LADO
+	jal	VIZINHOS
+	beq	t4, zero, SEM_SAIDA
+	li	t3, 1
+	bgt	t4, t3, NO_RECURSIVO
+	jal	ANDA_LADO
+	j	AGAIN
+	beq 	t1, a4, AGAIN 		
+	add 	a0, zero, zero 		
+	addi 	sp, sp, 8 		
+	ret 				# retorna para a chamadora
+	
+L1:
+	addi 	a0, a0, -1 		# argumento passa a ser (n-1)
+	jal 	NO_RECURSIVO 		# 
+	
+	ret
+	
+SEM_SAIDA:
+	beq	a4, t1, FIM
+	lw 	a0, 0(a2)
+	addi	a2, a2, -4
+LOOPSS:	addi	s10, s10, -4
+	sw	zero, 0(a1)
+	addi	a1, a1, -4
+	ebreak
+	lw	t3, 0(a1)
+	li	t6, 0xFFFFFFFF
+	sb	t6, 0(t3)
+	bne	t3, a0, LOOPSS
+	
+RETORNA:
+	ret
+	
+CHEGOU:
+	li 	a0, 1
+	ret
+# devolve o controle ao sistema operacional
+FIM:	li a7,10		# syscall de exit
+	ecall
