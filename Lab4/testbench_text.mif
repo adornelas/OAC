@@ -25,19 +25,22 @@ BEGIN
 00000012 : eeeef537;   % 26: 	li a0, 0xEEEEEEEE	# não deve rodar %
 00000013 : eee50513;   % 26:  %
 00000014 : 000505b3;   % 28: PULO:	add a1, a0, zero	# a1 = 0x00007000 %
-00000015 : 00b50a63;   % 29: 	beq a0, a1, PULO2	# pula pra PULO2 %
+00000015 : 02b50063;   % 29: 	beq a0, a1, PULO2	# pula pra PULO2 %
 00000016 : eeeef537;   % 30: 	li a0, 0xEEEEEEEE	# não deve rodar, a0=0xEEEEEEEE %
 00000017 : eee50513;   % 30:  %
 00000018 : eeeef537;   % 31: 	li a0, 0xEEEEEEEE	# não deve rodar, a0=0xEEEEEEEE %
 00000019 : eee50513;   % 31:  %
-0000001a : 00400593;   % 34: PULO2:	li a1, 0x00000004	# a1 = 4 %
-0000001b : 08458567;   % 35: 	jalr a0, a1, 132	# a0 = pc, pula 1 instruções %
-0000001c : eeeef537;   % 36: 	li a0, 0xEEEEEEEE	# não deve rodar, a0=0xEEEEEEEE %
-0000001d : eee50513;   % 36:  %
-0000001e : eeeef537;   % 37: 	li a0, 0xEEEEEEEE	# não deve rodar, a0=0xEEEEEEEE %
-0000001f : eee50513;   % 37:  %
-00000020 : eeeef537;   % 38: 	li a0, 0xEEEEEEEE	# não deve rodar, a0=0xEEEEEEEE %
-00000021 : eee50513;   % 38:  %
-00000022 : ccccd537;   % 39: 	li a0, 0xCCCCCCCC	# deve rodar, a0=0xCCCCCCCC %
-00000023 : ccc50513;   % 39:  %
+0000001a : ccccd537;   % 33: 	li a0, 0xCCCCCCCC	# deve rodar ao final, a0=0xCCCCCCCC %
+0000001b : ccc50513;   % 33:  %
+0000001c : 024006ef;   % 34: 	jal a3, FIM %
+0000001d : 00000593;   % 36: PULO2:	li a1, 0x00000000	# a1 = 4 %
+0000001e : 06458567;   % 37: 	jalr a0, a1, 100	# a0 = pc, vai pra ultima instrução %
+0000001f : eeeef537;   % 38: 	li a0, 0xEEEEEEEE	# não deve rodar, a0=0xEEEEEEEE %
+00000020 : eee50513;   % 38:  %
+00000021 : eeeef537;   % 39: 	li a0, 0xEEEEEEEE	# não deve rodar, a0=0xEEEEEEEE %
+00000022 : eee50513;   % 39:  %
+00000023 : eeeef537;   % 40: 	li a0, 0xEEEEEEEE	# não deve rodar, a0=0xEEEEEEEE %
+00000024 : eee50513;   % 40:  %
+00000025 : ccccd5b7;   % 42: FIM:	li a1, 0xCCCCCCCC %
+00000026 : ccc58593;   % 42:  %
 END;

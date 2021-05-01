@@ -30,10 +30,13 @@ PULO:	add a1, a0, zero	# a1 = 0x00007000
 	li a0, 0xEEEEEEEE	# não deve rodar, a0=0xEEEEEEEE
 	li a0, 0xEEEEEEEE	# não deve rodar, a0=0xEEEEEEEE
 
+	li a0, 0xCCCCCCCC	# deve rodar ao final, a0=0xCCCCCCCC
+	jal a3, FIM
 
-PULO2:	li a1, 0x00000004	# a1 = 4
-	jalr a0, a1, 132	# a0 = pc, pula 1 instruções
+PULO2:	li a1, 0x00000000	# a1 = 4
+	jalr a0, a1, 100	# a0 = pc, vai pra ultima instrução
 	li a0, 0xEEEEEEEE	# não deve rodar, a0=0xEEEEEEEE
 	li a0, 0xEEEEEEEE	# não deve rodar, a0=0xEEEEEEEE
 	li a0, 0xEEEEEEEE	# não deve rodar, a0=0xEEEEEEEE
-	li a0, 0xCCCCCCCC	# deve rodar, a0=0xCCCCCCCC
+	
+FIM:	li a1, 0xCCCCCCCC
