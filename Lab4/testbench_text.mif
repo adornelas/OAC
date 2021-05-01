@@ -1,0 +1,43 @@
+DEPTH = 16384;
+WIDTH = 32;
+ADDRESS_RADIX = HEX;
+DATA_RADIX = HEX;
+CONTENT
+BEGIN
+00000000 : 00a00513;   % 4: 	addi a0, zero, 10	# a0 = 0x0000000A %
+00000001 : 00a505b3;   % 5: 	add a1, a0, a0		# a1 = 0x00000014 %
+00000002 : 40a585b3;   % 6: 	sub a1, a1, a0		# a1 = 0x0000000A %
+00000003 : 00250513;   % 7: 	addi a0, a0, 2		# a0 = 0x0000000C %
+00000004 : 00a02023;   % 9: 	sw a0, 0(zero) %
+00000005 : 00002583;   % 10: 	lw a1, 0(zero) %
+00000006 : 00058593;   % 11: 	addi a1, a1, 0		# a1 = 0x0000000C %
+00000007 : 00251513;   % 13: 	slli a0, a0, 2		# a0 = 0x00000030 %
+00000008 : 00007537;   % 14: 	lui a0, 7		# a0 = 0x00007000 %
+00000009 : 00000513;   % 17: 	addi a0, zero, 0 %
+0000000a : 00100593;   % 18: 	addi a1, zero, 1 %
+0000000b : 00b57633;   % 19: 	and a2, a0, a1		# a2 = 0x00000000 %
+0000000c : 00b56633;   % 20: 	or a2, a0, a1		# a2 = 0x00000001 %
+0000000d : 00b54633;   % 21: 	xor a2, a0, a1		# a2 = 0x00000001 %
+0000000e : 00b52633;   % 22: 	slt a2, a0, a1		# a2 = 0x00000001 %
+0000000f : 014006ef;   % 24: 	jal a3, PULO		# pula pra PULO %
+00000010 : eeeef537;   % 25: 	li a0, 0xEEEEEEEE 	# não deve rodar %
+00000011 : eee50513;   % 25:  %
+00000012 : eeeef537;   % 26: 	li a0, 0xEEEEEEEE	# não deve rodar %
+00000013 : eee50513;   % 26:  %
+00000014 : 000505b3;   % 28: PULO:	add a1, a0, zero	# a1 = 0x00007000 %
+00000015 : 00b50a63;   % 29: 	beq a0, a1, PULO2	# pula pra PULO2 %
+00000016 : eeeef537;   % 30: 	li a0, 0xEEEEEEEE	# não deve rodar, a0=0xEEEEEEEE %
+00000017 : eee50513;   % 30:  %
+00000018 : eeeef537;   % 31: 	li a0, 0xEEEEEEEE	# não deve rodar, a0=0xEEEEEEEE %
+00000019 : eee50513;   % 31:  %
+0000001a : 00400593;   % 34: PULO2:	li a1, 0x00000004	# a1 = 4 %
+0000001b : 08458567;   % 35: 	jalr a0, a1, 132	# a0 = pc, pula 1 instruções %
+0000001c : eeeef537;   % 36: 	li a0, 0xEEEEEEEE	# não deve rodar, a0=0xEEEEEEEE %
+0000001d : eee50513;   % 36:  %
+0000001e : eeeef537;   % 37: 	li a0, 0xEEEEEEEE	# não deve rodar, a0=0xEEEEEEEE %
+0000001f : eee50513;   % 37:  %
+00000020 : eeeef537;   % 38: 	li a0, 0xEEEEEEEE	# não deve rodar, a0=0xEEEEEEEE %
+00000021 : eee50513;   % 38:  %
+00000022 : ccccd537;   % 39: 	li a0, 0xCCCCCCCC	# deve rodar, a0=0xCCCCCCCC %
+00000023 : ccc50513;   % 39:  %
+END;

@@ -14,26 +14,26 @@ INICIO:
 	lui a0, 7		# a0 = 0x00007000
 	
 	
-	addi a0, zero, 1
-	addi a1, zero, 3
-	and a2, a0, a1		# a2 = 0x00000001
-	or a2, a0, a1		# a2 = 0x00000003
-	xor a2, a0, a1		# a2 = 0x00000002
-	slt a2, a1, a0		# a2 = 0x00000001
+	addi a0, zero, 0
+	addi a1, zero, 1
+	and a2, a0, a1		# a2 = 0x00000000
+	or a2, a0, a1		# a2 = 0x00000001
+	xor a2, a0, a1		# a2 = 0x00000001
+	slt a2, a0, a1		# a2 = 0x00000001
 	
 	jal a3, PULO		# pula pra PULO
-	addi a0, a0, 1		# não deve rodar
-	addi a0, a0, 2		# não deve rodar
+	li a0, 0xEEEEEEEE 	# não deve rodar
+	li a0, 0xEEEEEEEE	# não deve rodar
 
 PULO:	add a1, a0, zero	# a1 = 0x00007000
 	beq a0, a1, PULO2	# pula pra PULO2
-	addi a0, a0, 3		# não deve rodar
-	addi a0, a0, 4		# não deve rodar
+	li a0, 0xEEEEEEEE	# não deve rodar, a0=0xEEEEEEEE
+	li a0, 0xEEEEEEEE	# não deve rodar, a0=0xEEEEEEEE
 
 
-PULO2:	addi a1, zero, 100	# a1 = 17
-	jalr a0, a1, 1		# a0 = pc, pula 1 instruções
-	addi a1, a1, 5		# não deve rodar
-	addi a1, a1, 5		# não deve rodar
-	addi a1, a1, 5		# não deve rodar
-	addi a1, a1, 5		# não deve rodar
+PULO2:	li a1, 0x00000004	# a1 = 4
+	jalr a0, a1, 132	# a0 = pc, pula 1 instruções
+	li a0, 0xEEEEEEEE	# não deve rodar, a0=0xEEEEEEEE
+	li a0, 0xEEEEEEEE	# não deve rodar, a0=0xEEEEEEEE
+	li a0, 0xEEEEEEEE	# não deve rodar, a0=0xEEEEEEEE
+	li a0, 0xCCCCCCCC	# deve rodar, a0=0xCCCCCCCC
