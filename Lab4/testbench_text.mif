@@ -10,7 +10,7 @@
 00100513 	addi a0, zero, 1	# a0 = 0x00000001
 00300593 	addi a1, zero, 3	# a1 = 0x00000003
 00b57633 	and a2, a0, a1		# a2 = 0x00000001
-00b56633 	or a2, a0, a1		# a2 = 0x00000003
+00b56633 	or a2, a0, a1		# a2 = 0x00000002
 00b54633 	xor a2, a0, a1		# a2 = 0x00000002
 00b52633 	slt a2, a0, a1		# a2 = 0x00000001
 014006ef 	jal a3, PULO		# pula pra PULO
@@ -28,7 +28,7 @@ ccccd537 	li a0, 0xCCCCCCCC	# deve rodar ao final, a0=0xCCCCCCCC
 ccc50513
 024006ef 	jal a3, FIM
 00000593 PULO2:	li a1, 0x00000000	# a1 = 0x00000000
-06458567 	jalr a0, a1, 100	# a0 = pc, vai pra ultima instrução
+06458567 	jalr a0, a1, 104	# a0 = pc, vai pra ultima instrução
 eeeef537 	li a0, 0xEEEEEEEE	# não deve rodar, a0=0xEEEEEEEE
 eee50513
 eeeef537 	li a0, 0xEEEEEEEE	# não deve rodar, a0=0xEEEEEEEE
